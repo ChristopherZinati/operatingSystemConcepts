@@ -5,134 +5,148 @@
 #include <iomanip>
 #include <string>
 
-using namespace std;
-
 class Process {
 public:
     int pid;
-    int arr_time;
+    int arrival_time;
     int burst_time;
     int completion_time;
     int waiting_time;
     int turnaround_time;
 
-    Process(int id, int arr, int burst) : pid(id), arr_time(arr), 
-        completion_time(0), waiting_time(0), turnaround_time(0){}
+    Process(int id, int arrival, int burst)
+        : pid(id), arrival_time(arrival), burst_time(burst),
+          completion_time(0), waiting_time(0), turnaround_time(0) {}
 };
 
-class SchedulingAlgorithms{
+class SchedulingAlgorithms {
 public:
-    //First Come First Serve
-    void fcfs (vector<Process>& processes){
-        sort(processes.begin(), processes.end(), [](Process& a, Process& b) { 
-            return a.arr_time < b.arr_time;
-            });
-        int curr_time = 0;
-        for (auto& process : processes){
-            if (curr_time < process.arr_time){
-                curr_time = process.arr_time;
-            }
-            process.completion_time = curr_time + process.burst_time;
-            process.turnaround_time = process.completion_time-process.arr_time;
-            process.waiting_time = process.turnaround_time-process.burst_time;
-            curr_time += process.burst_time;          
-        }
-    }
-    //Shortest Job Next
-    void sjn (vector<Process>& processes){
-        sort(processes.begin(), processes.end(), [](Process& a, Process& b) { 
-            return a.arr_time < b.arr_time;
-            });
-        int curr_time = 0;
-        vector<Process> ready;
-
-        while(!processes.empty() || !ready.empty()){
-            while(!processes.empty() && processes.front().arr_time < curr_time){
-                ready.push_back(processes.front());
-                processes.erase(processes.begin());
-            }
-            if (!ready.empty()){
-                sort(ready.begin(), ready.end(), [](Process& a, Process& b) {
-                    return a.burst_time < b.burst_time;
-                });
-                Process process = ready.front();
-                ready.erase(ready.begin());
-
-                process.completion_time = curr_time + process.burst_time;
-                process.turnaround_time = process.completion_time - process.arr_time;
-                process.waiting_time = process.turnaround_time - process.burst_time;
-                curr_time += process.burst_time;
-            }
-            else {
-               curr_time = processes.front().arr_time; 
-            }
-        }
-    }
-    //Round Robin 
-    void roundr (vector<Process>& processes, int time_quant){
-        queue<Process> ready;
-        int curr_time = 0;
-        vector<Process> remaining = processes;
-        while(!remaining.empty() || !ready.empty()){
-            while(!remaining.empty() && remaining.front().arr_time <= curr_time){
-                ready.push(remaining.front());
-                remaining.erase(remaining.begin());
-            }
-            if(!ready.empty()){
-                Process process = ready.front();
-                ready.pop();
-                if(process.burst_time > time_quant){
-                    curr_time += time_quant;
-                    process.burst_time -= time_quant;
-                    while(!remaining.empty() && remaining.front().arr_time <= curr_time){
-                        ready.push(remaining.front());
-                        remaining.erase(remaining.begin());
-                    }
-                    ready.push(process);
-                } else {
-                    curr_time += process.burst_time;
-                    process.completion_time = curr_time;
-                    process.turnaround_time = process.turnaround_time - process.arr_time;
-                    process.waiting_time = process.turnaround_time - process.burst_time;
-                }
-            } else {
-                curr_time = remaining.front().arr_time;
-            }
-        }
-    }
-    void gantt_chart(const vector<Process>& processes) {
-        cout << "Gantt Chart:\n";
-        for (const auto& process : processes) {
-            cout << "| P" << process.pid << " ";
-        }
-        cout << "|\n";
+    void fcfs_scheduling(std::vector<Process>& processes) {
+        std::sort(processes.begin(), processes.end(), [](Process& a, Process& b) {
+            return a.arrival_time < b.arrival_time;
+        });
 
         int current_time = 0;
-        for (const auto& process : processes) {
-            cout << current_time << setw(4 + to_string(process.pid).length()) << "";
+        for (auto& process : processes) {
+            if (current_time < process.arrival_time) {
+                current_time = process.arrival_time;
+            }
+            process.completion_time = current_time + process.burst_time;
+            process.turnaround_time = process.completion_time - process.arrival_time;
+            process.waiting_time = process.turnaround_time - process.burst_time;
             current_time += process.burst_time;
         }
-        cout << current_time << "\n";
+    }
+
+    void sjn_scheduling(std::vector<Process>& processes) {
+        std::sort(processes.begin(), processes.end(), [](Process& a, Process& b) {
+            return a.arrival_time < b.arrival_time;
+        });
+
+        int current_time = 0;
+        std::vector<Process> ready_queue;
+
+        while (!processes.empty() || !ready_queue.empty()) {
+            while (!processes.empty() && processes.front().arrival_time <= current_time) {
+                ready_queue.push_back(processes.front());
+                processes.erase(processes.begin());
+            }
+            if (!ready_queue.empty()) {
+                std::sort(ready_queue.begin(), ready_queue.end(), [](Process& a, Process& b) {
+                    return a.burst_time < b.burst_time;
+                });
+                Process process = ready_queue.front();
+                ready_queue.erase(ready_queue.begin());
+
+                if (current_time < process.arrival_time) {
+                    current_time = process.arrival_time;
+                }
+
+                process.completion_time = current_time + process.burst_time;
+                process.turnaround_time = process.completion_time - process.arrival_time;
+                process.waiting_time = process.turnaround_time - process.burst_time;
+                current_time += process.burst_time;
+            } else {
+                current_time = processes.front().arrival_time;
+            }
+        }
+    }
+
+    void rr_scheduling(std::vector<Process>& processes, int time_quantum) {
+        std::queue<Process*> ready_queue;
+        int current_time = 0;
+        int index = 0;
+
+        while (index < processes.size() || !ready_queue.empty()) {
+            while (index < processes.size() && processes[index].arrival_time <= current_time) {
+                ready_queue.push(&processes[index]);
+                index++;
+            }
+            if (!ready_queue.empty()) {
+                Process* process = ready_queue.front();
+                ready_queue.pop();
+
+                if (process->burst_time > time_quantum) {
+                    current_time += time_quantum;
+                    process->burst_time -= time_quantum;
+                    while (index < processes.size() && processes[index].arrival_time <= current_time) {
+                        ready_queue.push(&processes[index]);
+                        index++;
+                    }
+                    ready_queue.push(process);
+                } else {
+                    current_time += process->burst_time;
+                    process->completion_time = current_time;
+                    process->turnaround_time = process->completion_time - process->arrival_time;
+                    process->waiting_time = process->turnaround_time - process->burst_time;
+                }
+            } else {
+                current_time = processes[index].arrival_time;
+            }
+        }
+    }
+
+    void print_gantt_chart(const std::vector<Process>& processes) {
+        std::cout << "Gantt Chart:\n";
+        int current_time = 0;
+        for (const auto& process : processes) {
+            if (current_time < process.arrival_time) {
+                current_time = process.arrival_time;
+            }
+            std::cout << "| P" << process.pid << " ";
+            current_time += process.burst_time;
+        }
+        std::cout << "|\n";
+
+        current_time = 0;
+        for (const auto& process : processes) {
+            if (current_time < process.arrival_time) {
+                current_time = process.arrival_time;
+            }
+            std::cout << current_time << std::setw(4 + std::to_string(process.pid).length()) << "";
+            current_time += process.burst_time;
+        }
+        std::cout << current_time << "\n";
     }
 };
 int main() {
     int choice;
-    cout << "Choose an option:\n";
-    cout << "1. Enter custom processes\n";
-    cout << "2. Use example processes\n";
-    cin >> choice;
+    std::cout << "Choose an option:\n";
+    std::cout << "1. Enter custom processes\n";
+    std::cout << "2. Use example processes\n";
+    std::cin >> choice;
 
-    vector<Process> processes;
+    std::vector<Process> processes;
 
     if (choice == 1) {
         int num_processes;
-        cout << "Enter the number of processes: ";
-        cin >> num_processes;
+        std::cout << "Enter the number of processes: ";
+        std::cin >> num_processes;
 
         for (int i = 0; i < num_processes; ++i) {
             int pid, arrival_time, burst_time;
-            cout << "Enter Process ID, Arrival Time, and Burst Time for process " << (i + 1) << ": ";
-            cin >> pid >> arrival_time >> burst_time;
+            std::cout << "Enter Process ID, Arrival Time, and Burst Time for process " << (i + 1) << ": ";
+            std::cin >> pid >> arrival_time >> burst_time;
             processes.emplace_back(pid, arrival_time, burst_time);
         }
     } else {
@@ -145,39 +159,40 @@ int main() {
     }
 
     int time_quantum;
-    cout << "Enter time quantum for Round Robin scheduling: ";
-    cin >> time_quantum;
+    std::cout << "Enter time quantum for Round Robin scheduling: ";
+    std::cin >> time_quantum;
 
     SchedulingAlgorithms scheduler;
 
-    vector<Process> fcfs_processes = processes;
-    scheduler.fcfs(fcfs_processes);
-    cout << "\nFCFS Scheduling:\n";
+    // FCFS Scheduling
+    std::vector<Process> fcfs_processes = processes;
+    scheduler.fcfs_scheduling(fcfs_processes);
+    std::cout << "\nFCFS Scheduling:\n";
     for (const auto& process : fcfs_processes) {
-        cout << "Process " << process.pid << ": Waiting Time = " << process.waiting_time
+        std::cout << "Process " << process.pid << ": Waiting Time = " << process.waiting_time
                   << ", Turnaround Time = " << process.turnaround_time << "\n";
     }
-    scheduler.gantt_chart(fcfs_processes);
+    scheduler.print_gantt_chart(fcfs_processes);
 
-
-    vector<Process> sjn_processes = processes;
-    scheduler.sjn(sjn_processes);
-    cout << "\nSJN Scheduling:\n";
+    // SJN Scheduling
+    std::vector<Process> sjn_processes = processes;
+    scheduler.sjn_scheduling(sjn_processes);
+    std::cout << "\nSJN Scheduling:\n";
     for (const auto& process : sjn_processes) {
-        cout << "Process " << process.pid << ": Waiting Time = " << process.waiting_time
+        std::cout << "Process " << process.pid << ": Waiting Time = " << process.waiting_time
                   << ", Turnaround Time = " << process.turnaround_time << "\n";
     }
-    scheduler.gantt_chart(sjn_processes);
+    scheduler.print_gantt_chart(sjn_processes);
 
-
-    vector<Process> rr_processes = processes;
-    scheduler.roundr(rr_processes, time_quantum);
-    cout << "\nRR Scheduling:\n";
+    // RR Scheduling
+    std::vector<Process> rr_processes = processes;
+    scheduler.rr_scheduling(rr_processes, time_quantum);
+    std::cout << "\nRR Scheduling:\n";
     for (const auto& process : rr_processes) {
-        cout << "Process " << process.pid << ": Waiting Time = " << process.waiting_time
+        std::cout << "Process " << process.pid << ": Waiting Time = " << process.waiting_time
                   << ", Turnaround Time = " << process.turnaround_time << "\n";
     }
-    scheduler.gantt_chart(rr_processes);
+    scheduler.print_gantt_chart(rr_processes);
 
     return 0;
 }
