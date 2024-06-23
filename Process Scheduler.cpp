@@ -64,4 +64,38 @@ public:
             }
         }
     }
+    void roundr (vector<Process>& processes, int time_quant){
+        queue<Process> ready;
+        int curr_time = 0;
+        vector<Process> remaining = processes;
+        while(!remaining.empty() || !ready.empty()){
+            while(!remaining.empty() && remaining.front().arr_time <= curr_time){
+                ready.push(remaining.front());
+                remaining.erase(remaining.begin());
+            }
+            if(!ready.empty()){
+                Process process = ready.front();
+                ready.pop();
+                if(process.burst_time > time_quant){
+                    curr_time += time_quant;
+                    process.burst_time -= time_quant;
+                    while(!remaining.empty() && remaining.front().arr_time <= curr_time){
+                        ready.push(remaining.front());
+                        remaining.erase(remaining.begin());
+                    }
+                    ready.push(process);
+                } else {
+                    curr_time += process.burst_time;
+                    process.completion_time = curr_time;
+                    process.turnaround_time = process.turnaround_time - process.arr_time;
+                    process.waiting_time = process.turnaround_time - process.burst_time;
+                }
+            } else {
+                curr_time = remaining.front().arr_time;
+            }
+        }
+    }
 };
+int main(){
+
+}
