@@ -35,4 +35,33 @@ public:
             curr_time += process.burst_time;          
         }
     }
+    void sjn (vector<Process>& processes){
+        sort(processes.begin(), processes.end(), [](Process& a, Process& b) { 
+            return a.arr_time < b.arr_time;
+            });
+        int curr_time = 0;
+        vector<Process> ready;
+
+        while(!processes.empty() || !ready.empty()){
+            while(!processes.empty() && processes.front().arr_time < curr_time){
+                ready.push_back(processes.front());
+                processes.erase(processes.begin());
+            }
+            if (!ready.empty()){
+                sort(ready.begin(), ready.end(), [](Process& a, Process& b) {
+                    return a.burst_time < b.burst_time;
+                });
+                Process process = ready.front();
+                ready.erase(ready.begin());
+
+                process.completion_time = curr_time + process.burst_time;
+                process.turnaround_time = process.completion_time - process.arr_time;
+                process.waiting_time = process.turnaround_time - process.burst_time;
+                curr_time += process.burst_time;
+            }
+            else {
+               curr_time = processes.front().arr_time; 
+            }
+        }
+    }
 };
