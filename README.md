@@ -5,3 +5,5 @@ alphanumeric.cpp demonstrates the use of multithreading to traverse an inputted 
 alphanumeric and skel can only be executed on Linux/MacOS because some libraries are not natively supported on windows.
 
 ProcessScheduler.cpp demonstrates the use of 3 common process scheduling algorithms.
+
+LC3VirtualMachine is a terminal based rendition of a cpu using LC3 architecture, more details in LC3VirtualMachine/LC3Readme
