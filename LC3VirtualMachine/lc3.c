@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <signal.h>
-//for windows systems:
 #include <Windows.h>
 #include <conio.h>  
 
