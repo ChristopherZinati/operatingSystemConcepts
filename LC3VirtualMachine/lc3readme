@@ -1,1 +1,27 @@
+to compile:
+WINDOWS:
+1. open the developer command prompt for vscode
+2. run "cd [\path\to\lc3.c]"
+3. run "cl lc3.c"
 
+LINUX/MACOS:
+1. open the terminal
+2. run "cd [\path\to\lc3.c]"
+3. run "gcc -o lc3.c lc3" (you can use the compiler of your choice)
+
+
+the lc3 VM runs .obj files that have been built using an assembler like Lc3 tools (https://github.com/chiragsakhuja/lc3tools).
+in this repo, there is an already assembled .obj of the game 2048 from https://github.com/rpendleton/lc3-2048
+
+!!! MAKE SURE THE LC3 EXECUTABLE AND THE .OBJ FILE ARE IN THE SAME DIRECTORY !!!
+
+to run a file:
+WINDOWS:
+1. open the CMD or the developer command prompt for vscode
+2. run "cd [path\to\lc3.c]" (if you didn't already while compiling)
+3. run "lc3 [path\to\.obj file]"
+
+LINUX/MACOS:
+1. open the terminal
+2. run "cd [path\to\lc3.c]" (if you didn't already while compiling)
+3. run "lc3 [path\to\.obj file]"
